@@ -121,64 +121,87 @@
 
 		//Floating circle initialize
 
-		var width, height, center = view.center;
-		
-		var radius = 300;
-		var smooth = true;
+		var width, height, center = view.center;	
 		var mousePos = view.center / 2;
 		var mouseVec = event.point - center;
-		var pathHeight = mousePos.y;
-		var originSegments = [];
 
-		var path = new Path.Circle({
+		var path1 = new Path.Circle({
+				center: center,
+				radius: 400,
+				selected: false,
+				fillColor: 'pink',
+				opacity: 0.5
+			});
+
+		var path2 = new Path.Circle({
+				center: center,
+				radius: 300,
+				selected: false,
+				fillColor: 'pink',
+				opacity: 0.5
+			});
+
+		var path3 = new Path.Circle({
 				center: center,
 				radius: 200,
-				selected: true,
-				fillColor: 'orange'
+				selected: false,
+				fillColor: 'pink',
+				opacity: 0.5
 			});
-		initializePath();
 
-		function initializePath() {
-			path.flatten(130);
-			path.smooth();
-			console.log(path.segments.length);
-			for(var i = 0; i < 10; i ++){
-				originSegments.push([path.segments[i].point.x,path.segments[i].point.y]);
+		Path.prototype.scalePoint = function(pointsNum, dRadius) {
+			var segmentsLength = this.segments.length;
+			var pointDegree = 2 * Math.PI * (pointsNum / segmentsLength);
+			var vector = [ -1 * dRadius * Math.cos(pointDegree), -1 * dRadius * Math.sin(pointDegree)];
+			this.segments[pointsNum].point = new Point(this.originSegments[pointsNum][0], this.originSegments[pointsNum][1]) + vector;
+		}
+
+		Path.prototype.setOriginSeg = function() {
+			this.originSegments = [];
+			for(var i = 0; i < this.segments.length; i ++){
+				this.originSegments.push([this.segments[i].point.x, this.segments[i].point.y]);
 			};
 		}
 
-		function scalePoint(pointsNum, dRadius) {
-			var segmentsLength = path.segments.length;
-			var pointDegree = 2 * Math.PI * (pointsNum / segmentsLength);
-			var vector = [ -1 * dRadius * Math.cos(pointDegree), -1 * dRadius * Math.sin(pointDegree)];
-			path.segments[pointsNum].point = new Point(originSegments[pointsNum][0], originSegments[pointsNum][1]) + vector;
-		}
-
-		
-		
-		function onMouseMove(event) {
-			mousePos = event.point;
-			mouseVec = mousePos - center;
-
-			console.log(mouseVec.length);
-		}
-		
-		function onFrame(event) {
-			for (var i = 0; i < 10; i++) {
+		Path.prototype.sinSeed = function(event) {
+			for (var i = 0; i < this.segments.length; i++) {
 				var sinSeed = event.count + (i) * 100;
 				var sinWave = Math.sin((mouseVec.length / 500) * sinSeed/100); 
 				var delta = sinWave * mouseVec.length / 4 * Math.sin((mouseVec.length / 500) * sinSeed /50);
 			
-				scalePoint(i, delta);
-				
-				
+				this.scalePoint(i, delta);	
 			}
-			path.smooth();
 		}
 
+		function initializePath() {
+			
+			path1.flatten(130);
+			path2.flatten(130);
+			path3.flatten(130);
 
+			path1.smooth();
+			path2.smooth();
+			path3.smooth();
+			
+			path1.setOriginSeg();
+			path2.setOriginSeg();
+			path3.setOriginSeg();
+		}
+		
+		function onMouseMove(event) {
+			mousePos = event.point;
+			mouseVec = mousePos - center;
+		}
+		
+		function onFrame(event) {
+			path1.sinSeed(event);
+			path2.sinSeed(event);
+			path3.sinSeed(event);
+		}
+
+		initializePath();
+		
 	</script>	
-
 	<style>
 		body,html {
 			margin:0;
