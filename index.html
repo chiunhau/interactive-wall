@@ -8,7 +8,7 @@
 	<script src="js/jquery-1.11.2.min.js"></script>
 	<script type="text/javascript" src="js/paper-full.min.js"></script>
 	<script type="text/paperscript" canvas="paperCanvas">
-
+	/*
 		var sourceVideo = document.getElementById('sourceVideo');
 		var sourceCanvas = document.getElementById('sourceCanvas');
 		var width = $(window).width();
@@ -108,20 +108,7 @@
 			}
 			
 		}
-	/*
-		function getRandom(min, max) {
-		    return Math.random() * (max - min) + min;
-		}
 
-		function twoSideRandom(numerator,denominator) {
-			if(getRandom(0, denominator) <= numerator) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-	*/
 		sourceCanvas.width = width;
 		sourceCanvas.height = height;
 
@@ -129,6 +116,66 @@
 		cloud.position = new Point(500, 100);
 
 		getWebcam();
+	
+		*/
+
+		//Floating circle initialize
+
+		var width, height, center = view.center;
+		
+		var radius = 300;
+		var smooth = true;
+		var mousePos = view.center / 2;
+		var mouseVec = event.point - center;
+		var pathHeight = mousePos.y;
+		var originSegments = [];
+
+		var path = new Path.Circle({
+				center: center,
+				radius: 200,
+				selected: true,
+				fillColor: 'orange'
+			});
+		initializePath();
+
+		function initializePath() {
+			path.flatten(130);
+			path.smooth();
+			console.log(path.segments.length);
+			for(var i = 0; i < 10; i ++){
+				originSegments.push([path.segments[i].point.x,path.segments[i].point.y]);
+			};
+		}
+
+		function scalePoint(pointsNum, dRadius) {
+			var segmentsLength = path.segments.length;
+			var pointDegree = 2 * Math.PI * (pointsNum / segmentsLength);
+			var vector = [ -1 * dRadius * Math.cos(pointDegree), -1 * dRadius * Math.sin(pointDegree)];
+			path.segments[pointsNum].point = new Point(originSegments[pointsNum][0], originSegments[pointsNum][1]) + vector;
+		}
+
+		
+		
+		function onMouseMove(event) {
+			mousePos = event.point;
+			mouseVec = mousePos - center;
+
+			console.log(mouseVec.length);
+		}
+		
+		function onFrame(event) {
+			for (var i = 0; i < 10; i++) {
+				var sinSeed = event.count + (i) * 100;
+				var sinWave = Math.sin((mouseVec.length / 500) * sinSeed/100); 
+				var delta = sinWave * mouseVec.length / 4 * Math.sin((mouseVec.length / 500) * sinSeed /50);
+			
+				scalePoint(i, delta);
+				
+				
+			}
+			path.smooth();
+		}
+
 
 	</script>	
 
