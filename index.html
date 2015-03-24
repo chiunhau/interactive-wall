@@ -16,6 +16,7 @@
 		var leftEgg = center - spacing;
 		var rightEgg = center + spacing;
 		var eggs = [];
+		var firstClicked = false;
 
 		function Egg(center) {
 			this.white = new Path.Circle({
@@ -23,7 +24,7 @@
 				radius: 200,
 				selected: false,
 				fillColor: '#fff',
-				opacity: 0.95
+				opacity: 0.9
 			});
 
 			this.yellow = new Path.Circle({
@@ -72,20 +73,19 @@
 				this.yellow.scalePoint(i, delta * 0.2);	
 			}
 		}
-
-		function initializePath() {	
-			eggs.push(new Egg(center));
-			eggs.push(new Egg(leftEgg));
-			eggs.push(new Egg(rightEgg));
-
-			for(var i = 0; i < eggs.length; i ++) {
-				eggs[i].white.setOriginSeg();
-				eggs[i].yellow.setOriginSeg();
-			}
-		}
 		
 		function onMouseMove(event) {
 			mousePos = event.point;
+		}
+
+		function onMouseUp(event) {
+			var newEgg = new Egg(event.point);
+			newEgg.white.setOriginSeg();
+			newEgg.yellow.setOriginSeg();
+			eggs.push(newEgg);
+			
+				document.getElementById("tip").style.display = "none";
+			
 		}
 		
 		function onFrame(event) {
@@ -94,42 +94,42 @@
 			}	
 		}
 		
-		initializePath();
-		
 	</script>	
 	<style>
 		body,html {
 			margin:0;
 			padding: 0;
-		}
-		video {			
-			display: none;
+			text-align: center;
+			font-family: 'Microsoft Jhenghei';
 		}
 		canvas {
 			position: absolute;
 			top: 0;
 			left: 0;			
 		}
-		#sourceCanvas {
-			display: none;
-		}
 		#paperCanvas{
 			height:100%;
 			width:100%;
 			background-color: hsla(250, 35%, 16%, 1);
 		}
-		#displayrCanvas{
-			height:100%;
-			width:100%;
+		h1,h2 {
+			color: #fff;
+			position: absolute;
+			left: 0;
+			right: 0;
 		}
-		img {
-			display: none;
+		span {
+			color: #ccc;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 70px;
 		}
 	</style>
 </head>
 <body>
-	<video id="sourceVideo" autoplay></video>
-	<canvas id="sourceCanvas"></canvas>
 	<canvas id="paperCanvas"></canvas>
-	<canvas id="displayCanvas"></canvas>	
+	<h1>荷包蛋的逆襲</h1>
+	<span id="tip">點擊任何地方以開始...</span>	
+</body>
 </html>
