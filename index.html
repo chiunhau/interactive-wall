@@ -11,64 +11,30 @@
 	<script type="text/paperscript" canvas="paperCanvas">
 
 		var center = view.center;	
-		var mousePos = view.center / 2;
+		var mousePos = view.center;
 		var spacing = new Point(450,0);
 		var leftEgg = center - spacing;
 		var rightEgg = center + spacing;
 		var eggs = [];
-		/*var path1 = new Path.Circle({
-				center: center,
-				radius: 200,
-				selected: false,
-				fillColor: '#fff',
-				opacity: 1
-			});
 
-		var path2 = new Path.Circle({
-				center: center,
-				radius: 80,
-				selected: false,
-				fillColor: '#ffe100',
-				opacity: 0.6
-			});
-
-		var path3 = new Path.Circle({
-				center: leftEgg,
-				radius: 200,
-				selected: false,
-				fillColor: '#fff',
-				opacity: 1
-			});
-
-		var path4 = new Path.Circle({
-				center: leftEgg,
-				radius: 80,
-				selected: false,
-				fillColor: '#ffe100',
-				opacity: 0.6
-			});
-*/	
 		function Egg(center) {
-			var white = new Path.Circle({
+			this.white = new Path.Circle({
 				center: center,
 				radius: 200,
 				selected: false,
 				fillColor: '#fff',
-				opacity: 1
+				opacity: 0.95
 			});
 
-			var yellow = new Path.Circle({
+			this.yellow = new Path.Circle({
 				center: center,
 				radius: 80,
 				selected: false,
 				fillColor: '#ffe100',
-				opacity: 1
+				opacity: 0.9
 			});
 
 			this.center = center;
-			this.white = white;
-			this.yellow = yellow;
-
 		}
 		
 		
@@ -80,8 +46,7 @@
 		}
 
 		Path.prototype.setOriginSeg = function() {
-
-			this.flatten(160);
+			this.flatten(130);
 			this.smooth();
 			this.originSegments = [];
 			for(var i = 0; i < this.segments.length; i ++){
@@ -89,28 +54,33 @@
 			};
 		}
 
-		Path.prototype.sinSeed = function(event, power) {
-			var mouseVec = mousePos - this.Ccenter;
-			console.log(this);
-			for (var i = 0; i < this.segments.length; i++) {
+		Egg.prototype.transform = function(event) {
+			var mouseVec = mousePos - this.center;
+
+			//transform white
+			for (var i = 0; i < this.white.segments.length; i++) {
+				var sinSeed = event.count + (i + i % 8)* 50; 
+				var sinWave = Math.sin(sinSeed/50); 
+				var delta = sinWave * (mouseVec.length / 30)* Math.sin(sinSeed /100);
+				this.white.scalePoint(i, delta *2);
+			}
+			//transform yellow
+			for (var i = 0; i < this.yellow.segments.length; i++) {
 				var sinSeed = event.count + (i + i % 3)* 100; 
 				var sinWave = Math.sin(sinSeed/100); 
 				var delta = sinWave * (mouseVec.length / 4)* Math.sin(sinSeed /200);
-				this.scalePoint(i, delta * power);	
+				this.yellow.scalePoint(i, delta * 0.2);	
 			}
 		}
 
 		function initializePath() {	
-			var eggCenter = new Egg(center);
-			var eggLeft = new Egg(leftEgg);
-			var eggRight = new Egg(rightEgg);
-			eggs.push(eggCenter);
-			eggs.push(eggLeft);
-			eggs.push(eggRight);
+			eggs.push(new Egg(center));
+			eggs.push(new Egg(leftEgg));
+			eggs.push(new Egg(rightEgg));
+
 			for(var i = 0; i < eggs.length; i ++) {
 				eggs[i].white.setOriginSeg();
 				eggs[i].yellow.setOriginSeg();
-				console.log(eggs[i].yellow.originSegments);
 			}
 		}
 		
@@ -119,10 +89,9 @@
 		}
 		
 		function onFrame(event) {
-			path1.sinSeed(event, 0.5);
-			path2.sinSeed(event, 0.2);
-			path3.sinSeed(event, 0.5);
-			path4.sinSeed(event, 0.2);
+			for(var i = 0; i < eggs.length; i ++) {
+				eggs[i].transform(event);
+			}	
 		}
 		
 		initializePath();
