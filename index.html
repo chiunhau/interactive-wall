@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<title>變形圈圈</title>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,197 +9,122 @@
 	<script src="js/jquery-1.11.2.min.js"></script>
 	<script type="text/javascript" src="js/paper-full.min.js"></script>
 	<script type="text/paperscript" canvas="paperCanvas">
-	/*
-		var sourceVideo = document.getElementById('sourceVideo');
-		var sourceCanvas = document.getElementById('sourceCanvas');
-		var width = $(window).width();
-		var height = $(window).height();		
-		var detection = {};
-		var xParts = 30, yParts = 20;
-		var blocksNum = xParts * yParts;
-		var xSide = Math.floor(width/xParts);
-		var ySide = Math.floor(height/yParts);
-		var destination;
 
-		// Initialize the getUserMedia and connet the source to <video> and run the render loop
-		function getWebcam(){
-			navigator.getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
-      if (navigator.getMedia) {
-	   		navigator.getMedia(
-		   		{
-		   			video: true
-		   		},
-		 			function(localMediaStream){
-	   				sourceVideo.src = window.URL.createObjectURL(localMediaStream);
-	   				sourceVideo.onloadedmetadata = function(e) {
-				      	view.on('frame', frameHandler);
-				    };
-					}, 
-			   	function(e){
-			   		console.log(e);
-			   	}
-				);
-			}
-		}
-
-		//render loop
-		function frameHandler(event){
-			var c = sourceCanvas.getContext('2d');
-			c.save();
-			c.scale(-1,1); //mirror transformation
-		  c.drawImage(sourceVideo,-width,0,width,height);
-		  c.restore();
-		  var currentFrame = c.getImageData(0,0,width,height);
-		    	
-		  if(!detection.framesArray){
-		   	detection.framesArray = [];
-		    detection.framesArray.push(currentFrame); 
-		  }
-		  else{	
-		    if (detection.framesArray[1] != null) {
-		    	detection.framesArray.splice(0,1);
-		    }
-		    
-		    detection.framesArray.push(currentFrame);
-		   	detectMotion(detection.framesArray[0],detection.framesArray[1]);
-		  }
-		  frameHandler;
-		}
-
-		// Detect motion
-
-		function detectMotion(previous, current){
-			
-			var changed = [];
-			for(var r = 0; r < yParts; r++){
-				for(var c = 0; c < xParts; c++){
-					var x = (c * xSide) + Math.floor(xSide/2);
-					var y = (r * ySide) + Math.floor(ySide/2);
-					var postition = (previous.width * 4) * y + x * 4;
-
-					var dr = Math.abs(previous.data[postition]-current.data[postition]);
-					var dg = Math.abs(previous.data[postition+1]-current.data[postition+1]);
-					var db = Math.abs(previous.data[postition+2]-current.data[postition+2]);
-
-					// motion detected
-					if((dr+dg+db) >= 100 ){
-						changed.push([c,r]);
-					}			
-				}
-			}
-
-			if (changed.length != 0) {
-				var cSum = 0, changedNum = changed.length;
-
-				for (var i = 0; i < changedNum; i++) {
-					cSum += changed[i][0];
-				}
-				var cAve = Math.floor(cSum/changedNum);
-				destination = new Point(cAve * xSide + Math.floor(xSide/2),100);
-			}
-
-			moveCloud(destination);			
-		}
-
-		function	moveCloud(destination){
-			if(destination != null){
-				var vector = destination - cloud.position;
-				cloud.position += vector/20;
-			}
-			
-		}
-
-		sourceCanvas.width = width;
-		sourceCanvas.height = height;
-
-		var cloud = new Raster('cloud');
-		cloud.position = new Point(500, 100);
-
-		getWebcam();
-	
-		*/
-
-		//Floating circle initialize
-
-		var width, height, center = view.center;	
+		var center = view.center;	
 		var mousePos = view.center / 2;
-		var mouseVec = event.point - center;
-
-		var path1 = new Path.Circle({
+		var spacing = new Point(450,0);
+		var leftEgg = center - spacing;
+		var rightEgg = center + spacing;
+		var eggs = [];
+		/*var path1 = new Path.Circle({
 				center: center,
-				radius: 400,
+				radius: 200,
 				selected: false,
-				fillColor: 'pink',
-				opacity: 0.5
+				fillColor: '#fff',
+				opacity: 1
 			});
 
 		var path2 = new Path.Circle({
 				center: center,
-				radius: 300,
+				radius: 80,
 				selected: false,
-				fillColor: 'pink',
-				opacity: 0.5
+				fillColor: '#ffe100',
+				opacity: 0.6
 			});
 
 		var path3 = new Path.Circle({
+				center: leftEgg,
+				radius: 200,
+				selected: false,
+				fillColor: '#fff',
+				opacity: 1
+			});
+
+		var path4 = new Path.Circle({
+				center: leftEgg,
+				radius: 80,
+				selected: false,
+				fillColor: '#ffe100',
+				opacity: 0.6
+			});
+*/	
+		function Egg(center) {
+			var white = new Path.Circle({
 				center: center,
 				radius: 200,
 				selected: false,
-				fillColor: 'pink',
-				opacity: 0.5
+				fillColor: '#fff',
+				opacity: 1
 			});
 
+			var yellow = new Path.Circle({
+				center: center,
+				radius: 80,
+				selected: false,
+				fillColor: '#ffe100',
+				opacity: 1
+			});
+
+			this.center = center;
+			this.white = white;
+			this.yellow = yellow;
+
+		}
+		
+		
 		Path.prototype.scalePoint = function(pointsNum, dRadius) {
 			var segmentsLength = this.segments.length;
 			var pointDegree = 2 * Math.PI * (pointsNum / segmentsLength);
-			var vector = [ -1 * dRadius * Math.cos(pointDegree), -1 * dRadius * Math.sin(pointDegree)];
+			var vector = [-1 * dRadius * Math.cos(pointDegree), -1 * dRadius * Math.sin(pointDegree)];
 			this.segments[pointsNum].point = new Point(this.originSegments[pointsNum][0], this.originSegments[pointsNum][1]) + vector;
 		}
 
 		Path.prototype.setOriginSeg = function() {
+
+			this.flatten(160);
+			this.smooth();
 			this.originSegments = [];
 			for(var i = 0; i < this.segments.length; i ++){
 				this.originSegments.push([this.segments[i].point.x, this.segments[i].point.y]);
 			};
 		}
 
-		Path.prototype.sinSeed = function(event) {
+		Path.prototype.sinSeed = function(event, power) {
+			var mouseVec = mousePos - this.Ccenter;
+			console.log(this);
 			for (var i = 0; i < this.segments.length; i++) {
-				var sinSeed = event.count + (i) * 100;
-				var sinWave = Math.sin((mouseVec.length / 500) * sinSeed/100); 
-				var delta = sinWave * mouseVec.length / 4 * Math.sin((mouseVec.length / 500) * sinSeed /50);
-			
-				this.scalePoint(i, delta);	
+				var sinSeed = event.count + (i + i % 3)* 100; 
+				var sinWave = Math.sin(sinSeed/100); 
+				var delta = sinWave * (mouseVec.length / 4)* Math.sin(sinSeed /200);
+				this.scalePoint(i, delta * power);	
 			}
 		}
 
-		function initializePath() {
-			
-			path1.flatten(130);
-			path2.flatten(130);
-			path3.flatten(130);
-
-			path1.smooth();
-			path2.smooth();
-			path3.smooth();
-			
-			path1.setOriginSeg();
-			path2.setOriginSeg();
-			path3.setOriginSeg();
+		function initializePath() {	
+			var eggCenter = new Egg(center);
+			var eggLeft = new Egg(leftEgg);
+			var eggRight = new Egg(rightEgg);
+			eggs.push(eggCenter);
+			eggs.push(eggLeft);
+			eggs.push(eggRight);
+			for(var i = 0; i < eggs.length; i ++) {
+				eggs[i].white.setOriginSeg();
+				eggs[i].yellow.setOriginSeg();
+				console.log(eggs[i].yellow.originSegments);
+			}
 		}
 		
 		function onMouseMove(event) {
 			mousePos = event.point;
-			mouseVec = mousePos - center;
 		}
 		
 		function onFrame(event) {
-			path1.sinSeed(event);
-			path2.sinSeed(event);
-			path3.sinSeed(event);
+			path1.sinSeed(event, 0.5);
+			path2.sinSeed(event, 0.2);
+			path3.sinSeed(event, 0.5);
+			path4.sinSeed(event, 0.2);
 		}
-
+		
 		initializePath();
 		
 	</script>	
@@ -221,6 +147,7 @@
 		#paperCanvas{
 			height:100%;
 			width:100%;
+			background-color: hsla(250, 35%, 16%, 1);
 		}
 		#displayrCanvas{
 			height:100%;
@@ -235,6 +162,5 @@
 	<video id="sourceVideo" autoplay></video>
 	<canvas id="sourceCanvas"></canvas>
 	<canvas id="paperCanvas"></canvas>
-	<canvas id="displayCanvas"></canvas>
-	<img src="cloud.gif" id="cloud">	
+	<canvas id="displayCanvas"></canvas>	
 </html>
